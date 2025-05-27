@@ -119,3 +119,17 @@ resource "aws_config_config_rule" "account_part_of_organization" {
 
   depends_on = [aws_config_configuration_recorder.test_recorder]
 }
+
+
+#check if VPCs have Flow Logs enabled 
+resource "aws_config_config_rule" "vpc_flow_logs_enabled" {
+  provider = aws.delegated_account_us-west-2
+  name     = "vpc-flow-logs-enabled-test"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "VPC_FLOW_LOGS_ENABLED"
+  }
+
+  depends_on = [aws_config_configuration_recorder.test_recorder]
+}
