@@ -133,3 +133,17 @@ resource "aws_config_config_rule" "vpc_flow_logs_enabled" {
 
   depends_on = [aws_config_configuration_recorder.test_recorder]
 }
+
+
+#check if security groups restrict RDP access 
+resource "aws_config_config_rule" "rdp_restricted_test" {
+  provider = aws.delegated_account_us-west-2
+  name     = "rdp-restricted-test"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "INCOMING_RDP_DISABLED"
+  }
+
+  depends_on = [aws_config_configuration_recorder.test_recorder]
+}
