@@ -64,7 +64,7 @@ resource "aws_iam_role" "config_role" {
 resource "aws_iam_role_policy_attachment" "config_role_policy" {
   provider   = aws.delegated_account_us-west-2
   role       = aws_iam_role.config_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/ConfigRole"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWS_ConfigRole"
 }
 
 # AWS Config Configuration Recorder
