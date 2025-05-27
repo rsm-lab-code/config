@@ -10,5 +10,10 @@ output "config_recorder_name" {
 
 output "config_rule_name" {
   description = "Name of the test Config rule"
-  value       = aws_config_config_rule.ssh_test.name
+  value = [
+    aws_config_config_rule.ssh_test.name,
+    aws_config_config_rule.account_part_of_organization.name,
+    aws_config_config_rule.vpc_flow_logs_enabled.name
+  ]
+
 }
