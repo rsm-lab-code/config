@@ -93,7 +93,7 @@ resource "aws_config_configuration_recorder_status" "test_recorder_status" {
   depends_on = [aws_config_delivery_channel.test_channel]
 }
 
-# One simple test rule - check if SSH is restricted
+#check if SSH is restricted
 resource "aws_config_config_rule" "ssh_test" {
   provider = aws.delegated_account_us-west-2
   name     = "ssh-restricted-test"
@@ -101,6 +101,20 @@ resource "aws_config_config_rule" "ssh_test" {
   source {
     owner             = "AWS"
     source_identifier = "INCOMING_SSH_DISABLED"
+  }
+
+  depends_on = [aws_config_configuration_recorder.test_recorder]
+}
+
+
+#check if account is part of AWS Organization
+resource "aws_config_config_rule" "account_part_of_organization" {
+  provider = aws.delegated_account_us-west-2
+  name     = "account-part-of-organization"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "ACCOUNT_PART_OF_ORGANIZATIONS"
   }
 
   depends_on = [aws_config_configuration_recorder.test_recorder]
