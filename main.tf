@@ -36,7 +36,7 @@ resource "aws_s3_bucket_policy" "config_bucket_policy" {
         ]
         Condition = {
           StringEquals = {
-            "AWS:SourceAccount" = var.delegated_account_id
+            "AWS:SourceAccount" = var.management_account_id
           }
         }
       }
