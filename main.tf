@@ -2,7 +2,7 @@
 resource "aws_s3_bucket" "config_bucket" {
   provider      = aws.management_account_us-west-2
   #provider      = aws.delegated_account_us-west-2
-  bucket        = "aws-config-test-${var.delegated_account_id}"
+  bucket        = "aws-config-test-${var.management_account_id}"
   force_destroy = true
 
   tags = {
