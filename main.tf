@@ -27,7 +27,8 @@ resource "aws_s3_bucket_policy" "config_bucket_policy" {
         Action = [
           "s3:GetBucketAcl",
           "s3:ListBucket",
-          "s3:PutObject"
+          "s3:PutObject", 
+          "s3:PutObjectAcl"
         ]
         Resource = [
           aws_s3_bucket.config_bucket.arn,
