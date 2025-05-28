@@ -212,51 +212,39 @@ resource "aws_config_configuration_aggregator" "organization_aggregator" {
   depends_on = [aws_config_configuration_recorder.test_recorder]
 }
 
-# Organization-wide Config Rules
-resource "aws_config_organization_config_rule" "ssh_test" {
+# Organization-wide Config Rules (using correct resource type)
+resource "aws_config_organization_managed_rule" "ssh_test" {
   provider = aws.management_account_us-west-2
   name     = "org-ssh-restricted"
 
-  organization_config_rule_source {
-    source_identifier = "INCOMING_SSH_DISABLED"
-    source_type       = "AWS"
-  }
+  rule_identifier = "INCOMING_SSH_DISABLED"
 
   depends_on = [aws_config_configuration_aggregator.organization_aggregator]
 }
 
-resource "aws_config_organization_config_rule" "account_part_of_organization" {
+resource "aws_config_organization_managed_rule" "account_part_of_organization" {
   provider = aws.management_account_us-west-2
   name     = "org-account-part-of-organization"
 
-  organization_config_rule_source {
-    source_identifier = "ACCOUNT_PART_OF_ORGANIZATIONS"
-    source_type       = "AWS"
-  }
+  rule_identifier = "ACCOUNT_PART_OF_ORGANIZATIONS"
 
   depends_on = [aws_config_configuration_aggregator.organization_aggregator]
 }
 
-resource "aws_config_organization_config_rule" "vpc_flow_logs_enabled" {
+resource "aws_config_organization_managed_rule" "vpc_flow_logs_enabled" {
   provider = aws.management_account_us-west-2
   name     = "org-vpc-flow-logs-enabled"
 
-  organization_config_rule_source {
-    source_identifier = "VPC_FLOW_LOGS_ENABLED"
-    source_type       = "AWS"
-  }
+  rule_identifier = "VPC_FLOW_LOGS_ENABLED"
 
   depends_on = [aws_config_configuration_aggregator.organization_aggregator]
 }
 
-resource "aws_config_organization_config_rule" "vpc_default_sg_closed" {
+resource "aws_config_organization_managed_rule" "vpc_default_sg_closed" {
   provider = aws.management_account_us-west-2
   name     = "org-vpc-default-sg-closed"
 
-  organization_config_rule_source {
-    source_identifier = "VPC_DEFAULT_SECURITY_GROUP_CLOSED"
-    source_type       = "AWS"
-  }
+  rule_identifier = "VPC_DEFAULT_SECURITY_GROUP_CLOSED"
 
   depends_on = [aws_config_configuration_aggregator.organization_aggregator]
 }
