@@ -13,13 +13,23 @@ output "member_config_recorder_name" {
   value       = aws_config_configuration_recorder.member_recorder.name
 }
 
-output "organization_config_rule_names" {
-  description = "Names of the organization Config rules"
+output "management_config_rule_names" {
+  description = "Names of the management account Config rules"
   value = [
-    aws_config_organization_managed_rule.ssh_test.name,
-    aws_config_organization_managed_rule.account_part_of_organization.name,
-    aws_config_organization_managed_rule.vpc_default_sg_closed.name,
-    aws_config_organization_managed_rule.vpc_flow_logs_enabled.name
+    aws_config_config_rule.ssh_test.name,
+    aws_config_config_rule.account_part_of_organization.name,
+    aws_config_config_rule.vpc_default_sg_closed.name,
+    aws_config_config_rule.vpc_flow_logs_enabled.name
+  ]
+}
+
+output "member_config_rule_names" {
+  description = "Names of the member account Config rules"
+  value = [
+    aws_config_config_rule.member_ssh_test.name,
+    aws_config_config_rule.member_account_part_of_organization.name,
+    aws_config_config_rule.member_vpc_default_sg_closed.name,
+    aws_config_config_rule.member_vpc_flow_logs_enabled.name
   ]
 }
 
