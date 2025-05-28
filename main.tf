@@ -117,11 +117,11 @@ resource "aws_iam_role" "config_role" {
   })
 }
 
-# Attach the AWS managed Config policy
+# Attach the AWS managed Config policy 
 resource "aws_iam_role_policy_attachment" "config_role_policy" {
   provider   = aws.management_account_us-west-2
   role       = aws_iam_role.config_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWS_ConfigRole"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWS_ConfigRole" 
 }
 
 # IAM role for Config Organization access
@@ -147,7 +147,7 @@ resource "aws_iam_role" "config_organization_role" {
 resource "aws_iam_role_policy_attachment" "config_organization_role_policy" {
   provider   = aws.management_account_us-west-2
   role       = aws_iam_role.config_organization_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/ConfigRole"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWS_ConfigRole" 
 }
 
 # Additional organization permissions
@@ -212,41 +212,53 @@ resource "aws_config_configuration_aggregator" "organization_aggregator" {
   depends_on = [aws_config_configuration_recorder.test_recorder]
 }
 
-# Organization-wide Config Rules (using correct resource type)
-resource "aws_config_organization_managed_rule" "ssh_test" {
+# Regular Config Rules in Management Account
+resource "aws_config_config_rule" "ssh_test" {
   provider = aws.management_account_us-west-2
-  name     = "org-ssh-restricted"
+  name     = "ssh-restricted-mgmt"
 
-  rule_identifier = "INCOMING_SSH_DISABLED"
+  source {
+    owner             = "AWS"
+    source_identifier = "INCOMING_SSH_DISABLED"
+  }
 
-  depends_on = [aws_config_configuration_aggregator.organization_aggregator]
+  depends_on = [aws_config_configuration_recorder.test_recorder]
 }
 
-resource "aws_config_organization_managed_rule" "account_part_of_organization" {
+resource "aws_config_config_rule" "account_part_of_organization" {
   provider = aws.management_account_us-west-2
-  name     = "org-account-part-of-organization"
+  name     = "account-part-of-organization-mgmt"
 
-  rule_identifier = "ACCOUNT_PART_OF_ORGANIZATIONS"
+  source {
+    owner             = "AWS"
+    source_identifier = "ACCOUNT_PART_OF_ORGANIZATIONS"
+  }
 
-  depends_on = [aws_config_configuration_aggregator.organization_aggregator]
+  depends_on = [aws_config_configuration_recorder.test_recorder]
 }
 
-resource "aws_config_organization_managed_rule" "vpc_flow_logs_enabled" {
+resource "aws_config_config_rule" "vpc_flow_logs_enabled" {
   provider = aws.management_account_us-west-2
-  name     = "org-vpc-flow-logs-enabled"
+  name     = "vpc-flow-logs-enabled-mgmt"
 
-  rule_identifier = "VPC_FLOW_LOGS_ENABLED"
+  source {
+    owner             = "AWS"
+    source_identifier = "VPC_FLOW_LOGS_ENABLED"
+  }
 
-  depends_on = [aws_config_configuration_aggregator.organization_aggregator]
+  depends_on = [aws_config_configuration_recorder.test_recorder]
 }
 
-resource "aws_config_organization_managed_rule" "vpc_default_sg_closed" {
+resource "aws_config_config_rule" "vpc_default_sg_closed" {
   provider = aws.management_account_us-west-2
-  name     = "org-vpc-default-sg-closed"
+  name     = "vpc-default-sg-closed-mgmt"
 
-  rule_identifier = "VPC_DEFAULT_SECURITY_GROUP_CLOSED"
+  source {
+    owner             = "AWS"
+    source_identifier = "VPC_DEFAULT_SECURITY_GROUP_CLOSED"
+  }
 
-  depends_on = [aws_config_configuration_aggregator.organization_aggregator]
+  depends_on = [aws_config_configuration_recorder.test_recorder]
 }
 
 # IAM role for member account Config
@@ -298,4 +310,53 @@ resource "aws_config_configuration_recorder_status" "member_recorder_status" {
   name       = aws_config_configuration_recorder.member_recorder.name
   is_enabled = true
   depends_on = [aws_config_delivery_channel.member_channel]
+}
+
+# Member Account Config Rules (same rules in delegated account)
+resource "aws_config_config_rule" "member_ssh_test" {
+  provider = aws.delegated_account_us-west-2
+  name     = "ssh-restricted-member"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "INCOMING_SSH_DISABLED"
+  }
+
+  depends_on = [aws_config_configuration_recorder.member_recorder]
+}
+
+resource "aws_config_config_rule" "member_account_part_of_organization" {
+  provider = aws.delegated_account_us-west-2
+  name     = "account-part-of-organization-member"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "ACCOUNT_PART_OF_ORGANIZATIONS"
+  }
+
+  depends_on = [aws_config_configuration_recorder.member_recorder]
+}
+
+resource "aws_config_config_rule" "member_vpc_flow_logs_enabled" {
+  provider = aws.delegated_account_us-west-2
+  name     = "vpc-flow-logs-enabled-member"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "VPC_FLOW_LOGS_ENABLED"
+  }
+
+  depends_on = [aws_config_configuration_recorder.member_recorder]
+}
+
+resource "aws_config_config_rule" "member_vpc_default_sg_closed" {
+  provider = aws.delegated_account_us-west-2
+  name     = "vpc-default-sg-closed-member"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "VPC_DEFAULT_SECURITY_GROUP_CLOSED"
+  }
+
+  depends_on = [aws_config_configuration_recorder.member_recorder]
 }
