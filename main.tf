@@ -1,4 +1,4 @@
-# Organization-wide S3 bucket for AWS Config
+# Create Organization-wide S3 bucket for AWS Config
 resource "aws_s3_bucket" "config_bucket" {
   provider      = aws.management_account_us-west-2
   bucket        = "aws-config-org-${var.management_account_id}"
@@ -98,7 +98,7 @@ resource "aws_s3_bucket_policy" "config_bucket_policy" {
   })
 }
 
-# IAM role for AWS Config in Management Account
+# Create IAM role for AWS Config in Management Account
 resource "aws_iam_role" "config_role" {
   provider = aws.management_account_us-west-2
   name     = "aws-config-management-role"
@@ -117,7 +117,7 @@ resource "aws_iam_role" "config_role" {
   })
 }
 
-# Attach the AWS managed Config policy 
+# Attach the AWS managed Config policy to the role
 resource "aws_iam_role_policy_attachment" "config_role_policy" {
   provider   = aws.management_account_us-west-2
   role       = aws_iam_role.config_role.name
@@ -173,7 +173,7 @@ resource "aws_iam_role_policy" "config_organization_policy" {
   })
 }
 
-# AWS Config Configuration Recorder for Management Account
+# AWS Config Configuration Recorder for Management Account (record changes in management account using the config_role)
 resource "aws_config_configuration_recorder" "test_recorder" {
   provider = aws.management_account_us-west-2
   name     = "management-recorder"
@@ -184,14 +184,14 @@ resource "aws_config_configuration_recorder" "test_recorder" {
   }
 }
 
-# AWS Config Delivery Channel for Management Account
+# AWS Config Delivery Channel for Management Account (where to deliver the configuration data)
 resource "aws_config_delivery_channel" "test_channel" {
   provider       = aws.management_account_us-west-2
   name           = "management-delivery-channel"
   s3_bucket_name = aws_s3_bucket.config_bucket.bucket
 }
 
-# Enable Config Recorder for Management Account
+# Enable Config Recorder for Management Account (enables change recorder)
 resource "aws_config_configuration_recorder_status" "test_recorder_status" {
   provider   = aws.management_account_us-west-2
   name       = aws_config_configuration_recorder.test_recorder.name
@@ -199,7 +199,7 @@ resource "aws_config_configuration_recorder_status" "test_recorder_status" {
   depends_on = [aws_config_delivery_channel.test_channel]
 }
 
-# Config Aggregator for Organization
+# Config Aggregator for Organization (set up config aggregator to collect data across all AWS accounts)
 resource "aws_config_configuration_aggregator" "organization_aggregator" {
   provider = aws.management_account_us-west-2
   name     = "organization-config-aggregator"
@@ -212,7 +212,7 @@ resource "aws_config_configuration_aggregator" "organization_aggregator" {
   depends_on = [aws_config_configuration_recorder.test_recorder]
 }
 
-# Regular Config Rules in Management Account
+# Regular Config Rules in Management Account 
 resource "aws_config_config_rule" "ssh_test" {
   provider = aws.management_account_us-west-2
   name     = "ssh-restricted-mgmt"
@@ -261,7 +261,7 @@ resource "aws_config_config_rule" "vpc_default_sg_closed" {
   depends_on = [aws_config_configuration_recorder.test_recorder]
 }
 
-# IAM role for member account Config
+# IAM role for member account Config (create similar config role for non-management account)
 resource "aws_iam_role" "member_config_role" {
   provider = aws.delegated_account_us-west-2
   name     = "aws-config-member-role"
