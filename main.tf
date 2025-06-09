@@ -1,4 +1,4 @@
-# ========================================
+g ========================================
 # AWS CONFIG RESOURCES (Your existing code)
 # ========================================
 
@@ -289,10 +289,5 @@ resource "aws_networkmanager_transit_gateway_registration" "main" {
   global_network_id   = aws_networkmanager_global_network.main.id
   transit_gateway_arn = var.transit_gateway_arn
   
-  tags = {
-    Name        = "central-tgw-registration"
-    Environment = "shared"
-    ManagedBy   = "terraform"
-  }
 }
 
