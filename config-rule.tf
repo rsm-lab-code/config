@@ -49,6 +49,18 @@ resource "aws_config_config_rule" "vpc_default_sg_closed" {
   depends_on = [aws_config_configuration_recorder.test_recorder]
 }
 
+resource "aws_config_config_rule" "tgw_auto_attach_disabled_mgmt" {
+  provider = aws.management_account_us-west-2
+  name     = "ec2-transit-gateway-auto-vpc-attach-disabled-mgmt"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "EC2_TRANSIT_GATEWAY_AUTO_VPC_ATTACH_DISABLED"
+  }
+
+  depends_on = [aws_config_configuration_recorder.test_recorder]
+}
+
 # ========================================
 # MEMBER ACCOUNT CONFIG RULES
 # ========================================
@@ -60,7 +72,7 @@ resource "aws_config_config_rule" "member_ssh_test" {
 
   source {
     owner             = "AWS"
-    source_identifier = "INCOMING_SSH_DISABLED"
+g   source_identifier = "INCOMING_SSH_DISABLED"
   }
 
   depends_on = [aws_config_configuration_recorder.member_recorder]
@@ -109,6 +121,18 @@ resource "aws_config_config_rule" "subnet_auto_assign_public_ip_disabled" {
   source {
     owner             = "AWS"
     source_identifier = "SUBNET_AUTO_ASSIGN_PUBLIC_IP_DISABLED"
+  }
+
+  depends_on = [aws_config_configuration_recorder.member_recorder]
+}
+
+resource "aws_config_config_rule" "tgw_auto_attach_disabled_member" {
+  provider = aws.delegated_account_us-west-2
+  name     = "ec2-transit-gateway-auto-vpc-attach-disabled-member"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "EC2_TRANSIT_GATEWAY_AUTO_VPC_ATTACH_DISABLED"
   }
 
   depends_on = [aws_config_configuration_recorder.member_recorder]

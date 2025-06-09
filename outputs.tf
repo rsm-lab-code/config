@@ -90,13 +90,15 @@ output "governance_summary" {
         aws_config_config_rule.ssh_test.name,
         aws_config_config_rule.account_part_of_organization.name,
         aws_config_config_rule.vpc_default_sg_closed.name,
-        aws_config_config_rule.vpc_flow_logs_enabled.name       
+        aws_config_config_rule.vpc_flow_logs_enabled.name,      
+        aws_config_config_rule.tgw_auto_attach_disabled_mgmt.name
       ],
       [
         aws_config_config_rule.member_ssh_test.name,
         aws_config_config_rule.member_account_part_of_organization.name,
         aws_config_config_rule.member_vpc_default_sg_closed.name,
         aws_config_config_rule.member_vpc_flow_logs_enabled.name,
+        aws_config_config_rule.tgw_auto_attach_disabled_member.name,
         aws_config_config_rule.subnet_auto_assign_public_ip_disabled.name
       ]
     ))
