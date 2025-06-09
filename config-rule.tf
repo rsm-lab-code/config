@@ -136,4 +136,4 @@ resource "aws_config_config_rule" "tgw_auto_attach_disabled_member" {
   }
 
   depends_on = [aws_config_configuration_recorder.member_recorder]
-}
+
