@@ -1,6 +1,4 @@
-# ========================================
 # MANAGEMENT ACCOUNT CONFIG RULES
-# ========================================
 
 # Basic security rules
 resource "aws_config_config_rule" "ssh_test" {
@@ -51,22 +49,11 @@ resource "aws_config_config_rule" "vpc_default_sg_closed" {
   depends_on = [aws_config_configuration_recorder.test_recorder]
 }
 
-resource "aws_config_config_rule" "tgw_auto_attach_disabled_mgmt" {
-  provider = aws.management_account_us-west-2
-  name     = "transit-gateway-auto-vpc-attach-disabled-mgmt"
-
-  source {
-    owner             = "AWS"
-    source_identifier = "TRANSIT_GATEWAY_AUTO_VPC_ATTACH_DISABLED"
-  }
-
-  depends_on = [aws_config_configuration_recorder.test_recorder]
-}
-
 # ========================================
 # MEMBER ACCOUNT CONFIG RULES
 # ========================================
 
+# Basic security rules for member account
 resource "aws_config_config_rule" "member_ssh_test" {
   provider = aws.delegated_account_us-west-2
   name     = "ssh-restricted-member"
@@ -115,51 +102,13 @@ resource "aws_config_config_rule" "member_vpc_default_sg_closed" {
   depends_on = [aws_config_configuration_recorder.member_recorder]
 }
 
- 
-resource "aws_config_config_rule" "tgw_auto_attach_disabled_member" {
+resource "aws_config_config_rule" "subnet_auto_assign_public_ip_disabled" {
   provider = aws.delegated_account_us-west-2
-  name     = "transit-gateway-auto-vpc-attach-disabled-member"
+  name     = "subnet-auto-assign-public-ip-disabled"
 
   source {
     owner             = "AWS"
-    source_identifier = "TRANSIT_GATEWAY_AUTO_VPC_ATTACH_DISABLED"
-  }
-
-  depends_on = [aws_config_configuration_recorder.member_recorder]
-}
-
-resource "aws_config_config_rule" "network_firewall_policy_rule_compliance" {
-  provider = aws.delegated_account_us-west-2
-  name     = "netfw-policy-rule-compliance-check"
-
-  source {
-    owner             = "AWS"
-    source_identifier = "NETFW_POLICY_RULE_COMPLIANCE_CHECK"
-  }
-
-  depends_on = [aws_config_configuration_recorder.member_recorder]
-}
-
-resource "aws_config_config_rule" "ec2_security_group_attached_to_eni" {
-  provider = aws.delegated_account_us-west-2
-  name     = "ec2-security-group-attached-to-eni"
-
-  source {
-    owner             = "AWS"
-    source_identifier = "EC2_SECURITY_GROUP_ATTACHED_TO_ENI"
-  }
-
-  depends_on = [aws_config_configuration_recorder.member_recorder]
-}
-
-# IPAM specific rule
-resource "aws_config_config_rule" "ipam_pool_compliance" {
-  provider = aws.delegated_account_us-west-2  
-  name     = "ipam-pool-compliance-check"
-
-  source {
-    owner             = "AWS"
-    source_identifier = "VPC_IPAM_POOL_COMPLIANCE"
+    source_identifier = "SUBNET_AUTO_ASSIGN_PUBLIC_IP_DISABLED"
   }
 
   depends_on = [aws_config_configuration_recorder.member_recorder]

@@ -21,8 +21,7 @@ output "management_config_rule_names" {
     aws_config_config_rule.account_part_of_organization.name,
     aws_config_config_rule.vpc_default_sg_closed.name,
     aws_config_config_rule.vpc_flow_logs_enabled.name,
-    aws_config_config_rule.tgw_auto_attach_disabled_mgmt.name
-  ]
+      ]
 }
 
 output "member_config_rule_names" {
@@ -32,10 +31,7 @@ output "member_config_rule_names" {
     aws_config_config_rule.member_account_part_of_organization.name,
     aws_config_config_rule.member_vpc_default_sg_closed.name,
     aws_config_config_rule.member_vpc_flow_logs_enabled.name,
-    aws_config_config_rule.tgw_auto_attach_disabled_member.name,
-    aws_config_config_rule.network_firewall_policy_rule_compliance.name,
-    aws_config_config_rule.ec2_security_group_attached_to_eni.name,
-    aws_config_config_rule.ipam_pool_compliance.name
+    aws_config_config_rule.subnet_auto_assign_public_ip_disabled.name
   ]
 }
 
@@ -94,18 +90,14 @@ output "governance_summary" {
         aws_config_config_rule.ssh_test.name,
         aws_config_config_rule.account_part_of_organization.name,
         aws_config_config_rule.vpc_default_sg_closed.name,
-        aws_config_config_rule.vpc_flow_logs_enabled.name,
-        aws_config_config_rule.tgw_auto_attach_disabled_mgmt.name
+        aws_config_config_rule.vpc_flow_logs_enabled.name       
       ],
       [
         aws_config_config_rule.member_ssh_test.name,
         aws_config_config_rule.member_account_part_of_organization.name,
         aws_config_config_rule.member_vpc_default_sg_closed.name,
         aws_config_config_rule.member_vpc_flow_logs_enabled.name,
-        aws_config_config_rule.tgw_auto_attach_disabled_member.name,
-        aws_config_config_rule.network_firewall_policy_rule_compliance.name,
-        aws_config_config_rule.ec2_security_group_attached_to_eni.name,
-        aws_config_config_rule.ipam_pool_compliance.name
+        aws_config_config_rule.subnet_auto_assign_public_ip_disabled.name
       ]
     ))
     regions_covered         = var.aws_regions
