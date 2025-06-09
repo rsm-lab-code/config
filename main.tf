@@ -1,7 +1,3 @@
-g ========================================
-# AWS CONFIG RESOURCES (Your existing code)
-# ========================================
-
 # Create Organization-wide S3 bucket for AWS Config
 resource "aws_s3_bucket" "config_bucket" {
   provider      = aws.management_account_us-west-2
