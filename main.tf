@@ -1,3 +1,7 @@
+# ========================================
+# AWS CONFIG RESOURCES (Your existing code)
+# ========================================
+
 # Create Organization-wide S3 bucket for AWS Config
 resource "aws_s3_bucket" "config_bucket" {
   provider      = aws.management_account_us-west-2
@@ -173,7 +177,7 @@ resource "aws_iam_role_policy" "config_organization_policy" {
   })
 }
 
-# AWS Config Configuration Recorder for Management Account (record changes in management account using the config_role)
+# AWS Config Configuration Recorder for Management Account
 resource "aws_config_configuration_recorder" "test_recorder" {
   provider = aws.management_account_us-west-2
   name     = "management-recorder"
@@ -184,14 +188,14 @@ resource "aws_config_configuration_recorder" "test_recorder" {
   }
 }
 
-# AWS Config Delivery Channel for Management Account (where to deliver the configuration data)
+# AWS Config Delivery Channel for Management Account
 resource "aws_config_delivery_channel" "test_channel" {
   provider       = aws.management_account_us-west-2
   name           = "management-delivery-channel"
   s3_bucket_name = aws_s3_bucket.config_bucket.bucket
 }
 
-# Enable Config Recorder for Management Account (enables change recorder)
+# Enable Config Recorder for Management Account
 resource "aws_config_configuration_recorder_status" "test_recorder_status" {
   provider   = aws.management_account_us-west-2
   name       = aws_config_configuration_recorder.test_recorder.name
@@ -199,7 +203,7 @@ resource "aws_config_configuration_recorder_status" "test_recorder_status" {
   depends_on = [aws_config_delivery_channel.test_channel]
 }
 
-# Config Aggregator for Organization (set up config aggregator to collect data across all AWS accounts)
+# Config Aggregator for Organization
 resource "aws_config_configuration_aggregator" "organization_aggregator" {
   provider = aws.management_account_us-west-2
   name     = "organization-config-aggregator"
@@ -212,56 +216,7 @@ resource "aws_config_configuration_aggregator" "organization_aggregator" {
   depends_on = [aws_config_configuration_recorder.test_recorder]
 }
 
-# Regular Config Rules in Management Account 
-resource "aws_config_config_rule" "ssh_test" {
-  provider = aws.management_account_us-west-2
-  name     = "ssh-restricted-mgmt"
-
-  source {
-    owner             = "AWS"
-    source_identifier = "INCOMING_SSH_DISABLED"
-  }
-
-  depends_on = [aws_config_configuration_recorder.test_recorder]
-}
-
-resource "aws_config_config_rule" "account_part_of_organization" {
-  provider = aws.management_account_us-west-2
-  name     = "account-part-of-organization-mgmt"
-
-  source {
-    owner             = "AWS"
-    source_identifier = "ACCOUNT_PART_OF_ORGANIZATIONS"
-  }
-
-  depends_on = [aws_config_configuration_recorder.test_recorder]
-}
-
-resource "aws_config_config_rule" "vpc_flow_logs_enabled" {
-  provider = aws.management_account_us-west-2
-  name     = "vpc-flow-logs-enabled-mgmt"
-
-  source {
-    owner             = "AWS"
-    source_identifier = "VPC_FLOW_LOGS_ENABLED"
-  }
-
-  depends_on = [aws_config_configuration_recorder.test_recorder]
-}
-
-resource "aws_config_config_rule" "vpc_default_sg_closed" {
-  provider = aws.management_account_us-west-2
-  name     = "vpc-default-sg-closed-mgmt"
-
-  source {
-    owner             = "AWS"
-    source_identifier = "VPC_DEFAULT_SECURITY_GROUP_CLOSED"
-  }
-
-  depends_on = [aws_config_configuration_recorder.test_recorder]
-}
-
-# IAM role for member account Config (create similar config role for non-management account)
+# IAM role for member account Config
 resource "aws_iam_role" "member_config_role" {
   provider = aws.delegated_account_us-west-2
   name     = "aws-config-member-role"
@@ -297,7 +252,7 @@ resource "aws_config_configuration_recorder" "member_recorder" {
   }
 }
 
-# Member Account Delivery Channel (points to management account S3)
+# Member Account Delivery Channel
 resource "aws_config_delivery_channel" "member_channel" {
   provider       = aws.delegated_account_us-west-2
   name           = "member-delivery-channel"
@@ -312,51 +267,32 @@ resource "aws_config_configuration_recorder_status" "member_recorder_status" {
   depends_on = [aws_config_delivery_channel.member_channel]
 }
 
-# Member Account Config Rules (same rules in delegated account)
-resource "aws_config_config_rule" "member_ssh_test" {
-  provider = aws.delegated_account_us-west-2
-  name     = "ssh-restricted-member"
+# ========================================
+# NETWORK MANAGER RESOURCE 
+# ========================================
 
-  source {
-    owner             = "AWS"
-    source_identifier = "INCOMING_SSH_DISABLED"
+# Create Global Network
+resource "aws_networkmanager_global_network" "main" {
+  provider    = aws.delegated_account_us-west-2
+  description = var.global_network_description
+  
+  tags = {
+    Name        = "hub-spoke-global-network"
+    Environment = "shared"
+    ManagedBy   = "terraform"
   }
-
-  depends_on = [aws_config_configuration_recorder.member_recorder]
 }
 
-resource "aws_config_config_rule" "member_account_part_of_organization" {
-  provider = aws.delegated_account_us-west-2
-  name     = "account-part-of-organization-member"
-
-  source {
-    owner             = "AWS"
-    source_identifier = "ACCOUNT_PART_OF_ORGANIZATIONS"
+# Register Transit Gateway with Global Network
+resource "aws_networkmanager_transit_gateway_registration" "main" {
+  provider            = aws.delegated_account_us-west-2
+  global_network_id   = aws_networkmanager_global_network.main.id
+  transit_gateway_arn = var.transit_gateway_arn
+  
+  tags = {
+    Name        = "central-tgw-registration"
+    Environment = "shared"
+    ManagedBy   = "terraform"
   }
-
-  depends_on = [aws_config_configuration_recorder.member_recorder]
 }
 
-resource "aws_config_config_rule" "member_vpc_flow_logs_enabled" {
-  provider = aws.delegated_account_us-west-2
-  name     = "vpc-flow-logs-enabled-member"
-
-  source {
-    owner             = "AWS"
-    source_identifier = "VPC_FLOW_LOGS_ENABLED"
-  }
-
-  depends_on = [aws_config_configuration_recorder.member_recorder]
-}
-
-resource "aws_config_config_rule" "member_vpc_default_sg_closed" {
-  provider = aws.delegated_account_us-west-2
-  name     = "vpc-default-sg-closed-member"
-
-  source {
-    owner             = "AWS"
-    source_identifier = "VPC_DEFAULT_SECURITY_GROUP_CLOSED"
-  }
-
-  depends_on = [aws_config_configuration_recorder.member_recorder]
-}
